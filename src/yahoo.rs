@@ -1,4 +1,4 @@
-use reqwest::{get};
+use reqwest::{get, StatusCode};
 use serde_json::{Value};
 
 #[derive(Debug)]
@@ -43,10 +43,20 @@ pub async fn get_stock(stock_name: &str) -> Stock {
             stock_name
         )
     );
-    let resp : String = get(url)
-        .await.unwrap()
-        .text()
+
+    let resp = get(url)
         .await.unwrap();
 
-    parse_json(&resp).await
+    if resp.status() == StatusCode::NOT_FOUND {
+        println!("Bad stock name found: {}", &stock_name);
+        return Stock {
+            name: String::from("None"),
+            market_price: 0.0,
+            market_day_high: 0.0,
+            market_day_low: 0.0,
+        }
+    }
+
+    let text = resp.text().await.unwrap();
+    parse_json(&text).await
 }
