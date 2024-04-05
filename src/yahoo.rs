@@ -1,12 +1,16 @@
 use reqwest::{get, StatusCode};
 use serde_json::{Value};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+use crate::database::timestamp;
+
+#[derive(Serialize, Debug)]
 pub struct Stock {
-    pub name:            String,
-    pub market_price:    f64,
-    pub market_day_high: f64,
-    pub market_day_low:  f64,
+    pub name:             String,
+    pub market_price:     f64,
+    pub market_day_high:  f64,
+    pub market_day_low:   f64,
+    pub last_get_request: u64
 }
 
 pub async fn parse_json(stock_json: &str) -> Stock {
@@ -28,14 +32,16 @@ pub async fn parse_json(stock_json: &str) -> Stock {
         .unwrap();
 
     Stock {
-        name: name,
-        market_price: market_price,
-        market_day_high: market_day_high,
-        market_day_low: market_day_low,
+        name: serde_json::from_str(&name).unwrap(),
+        market_price:         market_price,
+        market_day_high:      market_day_high,
+        market_day_low:       market_day_low,
+        last_get_request:     timestamp(),
     }
 }
 
-pub async fn get_stock(stock_name: &str) -> Stock {
+pub async fn get_req(stock_name: &str) -> Stock {
+    // get stock should only make a req if the entry doesnt exist in the db.
     // dont you DARE go over that ruler
     let url = String::from(
         format!(
@@ -54,6 +60,7 @@ pub async fn get_stock(stock_name: &str) -> Stock {
             market_price: 0.0,
             market_day_high: 0.0,
             market_day_low: 0.0,
+            last_get_request: timestamp(),
         }
     }
 

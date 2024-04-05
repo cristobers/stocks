@@ -1,0 +1,3 @@
+[] Have the market open at 9AM and close whenever the stock market closes
+[] Have the market automatically pull prices from Yahoo Finance every N minutes/hours
+[] Create a discord bot to read from the DB
