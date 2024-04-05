@@ -15,7 +15,7 @@ fn connect(name: &str) -> Connection {
         .unwrap()
 }
 
-pub async fn get(stock_name : &str) -> Stock {
+pub fn get(stock_name : &str) -> Stock {
     let conn = connect("stocks.db");
     let mut stmt = conn.prepare(
         "SELECT *

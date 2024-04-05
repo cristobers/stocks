@@ -1,7 +1,7 @@
 use tokio;
-use std::{thread, time};
 use std::net::{TcpListener, TcpStream};
 use crate::yahoo::Stock;
+use futures;
 
 use std::io::Write;
 use std::io::Read;
@@ -25,12 +25,14 @@ async fn initialise() {
     ].to_vec();
 
     for stock in stocks.into_iter() {
-        let db_query = database::get(&stock).await;
+        let db_query = database::get(&stock);
+
         // if it exists in the db, print it
         if db_query.name != "None" {
             println!("{:?}", db_query);
             continue;
         }
+
         let yahoo_req = yahoo::get_req(&stock).await;
         if yahoo_req.name != "None" {
             println!("Adding {} to the database", &stock);
@@ -45,7 +47,7 @@ async fn query_stock(name: &str, mut conn: &TcpStream) {
     /*
         Returns something that then gets sent to the connection
     */
-    let data = database::get(&name).await;
+    let data = database::get(&name);
     let parsed = serde_json::to_string(&data).unwrap();
     conn.write(
         &parsed.as_bytes()
@@ -82,7 +84,7 @@ async fn handle_conn (mut conn: &TcpStream) {
     };
 }
 
-async fn get_stocks(TIMEOUT: u64) {
+async fn get_stocks(time_out: u64) {
     /*
     loop {
         get all stocks from database
@@ -91,6 +93,7 @@ async fn get_stocks(TIMEOUT: u64) {
     }
     */
     
+    // this will do for now
     loop {
         let names : Vec<String> = database::get_names();
         println!("Database stock names: {:?}", &names);
@@ -98,8 +101,8 @@ async fn get_stocks(TIMEOUT: u64) {
             let stock_struct : Stock = yahoo::get_req(&name).await;
             database::insert_stock(stock_struct, "stocks.db").await;
         }
-        println!("Hello!, sleeping for {} seconds...", TIMEOUT);
-        thread::sleep(time::Duration::from_secs(TIMEOUT));
+        println!("Hello!, sleeping for {} seconds...", time_out);
+        tokio::time::sleep(time::Duration::from_secs(time_out)).await;
     }
 }
 
@@ -107,12 +110,15 @@ async fn get_stocks(TIMEOUT: u64) {
 async fn main() {
     // Some basic stocks to pad out the DB
     // initialise().await;
-    const TIMEOUT : u64 = 60 * 60;
+
+    const time_out : u64 = 60 * 60;
     tokio::spawn(async move {
-        get_stocks(TIMEOUT).await;
+        get_stocks(time_out).await;
     });
 
-    let listener = TcpListener::bind("127.0.0.1:7690").unwrap();
+    let listener = TcpListener::bind("127.0.0.1:7690")
+        .expect("PORT DIDNT OPEN WHY GOT WHY");
+
     for stream in listener.incoming() {
         let mut curr_stream = stream.unwrap();
         tokio::spawn(async move {
@@ -133,5 +139,4 @@ async fn main() {
             }
         }
     */
-
 }
