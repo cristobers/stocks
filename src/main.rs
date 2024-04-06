@@ -41,11 +41,13 @@ async fn initialise() {
     }
 }
 
-async fn buy_stock() {
+async fn buy_stock(stock: &str, amount : &str, mut conn: &TcpStream) {
+    println!("Buying {} {}", &amount, &stock);
     todo!("buying :3");
 }
 
-async fn sell_stock() {
+async fn sell_stock(stock: &str, amount : &str, mut conn: &TcpStream) {
+    println!("Selling {} {}", &amount, &stock);
     todo!("selling :3");
 }
 
@@ -83,11 +85,9 @@ async fn handle_conn (mut conn: &TcpStream) {
         panic!("incorrect number of arguments");
     }
 
-    println!("Command: {} Stock: {} Amount: {}", &cmd, &stock, &amount);
-
     match cmd {
-        "BUY"   => buy_stock().await,
-        "SELL"  => sell_stock().await,
+        "BUY"   => buy_stock(stock, amount, &conn).await,
+        "SELL"  => sell_stock(stock, amount, &conn).await,
         "QUERY" => query_stock(stock, &conn).await,
         _ => todo!("UNKNOWN COMMAND!!!"),
     };
