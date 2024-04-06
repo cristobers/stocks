@@ -2,10 +2,8 @@ use tokio;
 use std::net::{TcpListener, TcpStream};
 use crate::yahoo::Stock;
 use futures;
-
 use std::io::Write;
 use std::io::Read;
-
 
 mod yahoo;
 mod database;
@@ -43,12 +41,23 @@ async fn initialise() {
     }
 }
 
+async fn buy_stock() {
+    todo!("buying :3");
+}
+
+async fn sell_stock() {
+    todo!("selling :3");
+}
+
 async fn query_stock(name: &str, mut conn: &TcpStream) {
-    /*
-        Returns something that then gets sent to the connection
-    */
-    let data = database::get(&name);
-    let parsed = serde_json::to_string(&data).unwrap();
+    let mut initial_query = database::get(&name);
+    if database::should_we_pull_new_prices(&initial_query) {
+        println!("Getting new information for: {}", &initial_query.name);
+        let updated_stock = yahoo::get_req(&initial_query.name).await;
+        database::insert_stock(updated_stock.clone(), "stocks.db").await;
+        initial_query = updated_stock;
+    }
+    let parsed = serde_json::to_string(&initial_query).unwrap();
     conn.write(
         &parsed.as_bytes()
     ).unwrap();
@@ -77,45 +86,29 @@ async fn handle_conn (mut conn: &TcpStream) {
     println!("Command: {} Stock: {} Amount: {}", &cmd, &stock, &amount);
 
     match cmd {
-        "BUY"   => todo!("BUYING"),
-        "SELL"  => todo!("SELLING"),
+        "BUY"   => buy_stock().await,
+        "SELL"  => sell_stock().await,
         "QUERY" => query_stock(stock, &conn).await,
         _ => todo!("UNKNOWN COMMAND!!!"),
     };
 }
 
 async fn get_stocks(time_out: u64) {
-    /*
-    loop {
-        get all stocks from database
-        update their prices
-        timeout for an hour
-    }
-    */
-    
-    // this will do for now
     loop {
         let names : Vec<String> = database::get_names();
         println!("Database stock names: {:?}", &names);
         for name in names {
             let stock_struct : Stock = yahoo::get_req(&name).await;
+            println!("{:?}", stock_struct);
             database::insert_stock(stock_struct, "stocks.db").await;
         }
         println!("Hello!, sleeping for {} seconds...", time_out);
-        tokio::time::sleep(time::Duration::from_secs(time_out)).await;
+        tokio::time::sleep(tokio::time::Duration::from_secs(time_out)).await;
     }
 }
 
 #[tokio::main]
 async fn main() {
-    // Some basic stocks to pad out the DB
-    // initialise().await;
-
-    const time_out : u64 = 60 * 60;
-    tokio::spawn(async move {
-        get_stocks(time_out).await;
-    });
-
     let listener = TcpListener::bind("127.0.0.1:7690")
         .expect("PORT DIDNT OPEN WHY GOT WHY");
 
@@ -125,18 +118,4 @@ async fn main() {
             handle_conn(&mut curr_stream).await;
         });
     }
-
-    /*
-        loop forever {
-            if a person requests a stock to either buy or sell {
-                if the stock hasnt been updated in an hour {
-                    update_stock()
-                    put_into_db()
-                    return updated price from db to user
-                } else {
-                    return current price from db
-                }
-            }
-        }
-    */
 }

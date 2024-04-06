@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::database::timestamp;
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct Stock {
     pub name:             String,
     pub market_price:     f64,

@@ -10,6 +10,14 @@ pub fn timestamp() -> u64 {
         .as_secs()
 }
 
+pub fn should_we_pull_new_prices(stock : &Stock) -> bool {
+    let curr_time = timestamp();
+    if (curr_time - stock.last_get_request) >= 3600 {
+        return true;
+    }
+    false
+}
+
 fn connect(name: &str) -> Connection {
     Connection::open(name)
         .unwrap()
@@ -60,13 +68,18 @@ pub fn get_names() -> Vec<String> {
 }
 
 pub async fn insert_stock(data : Stock, db_name: &str) {
-    println!("INSERT GOT CALLED!!!");
     let conn = connect(db_name);
     conn.execute(
         "REPLACE INTO 
         stocks(stock_name, stock_price, stock_day_high, stock_day_low, last_get_request)
         VALUES (?1, ?2, ?3, ?4, ?5)
-        ", (data.name, data.market_price, data.market_day_high, data.market_day_low, timestamp()),
+        ", (
+            data.name, 
+            data.market_price, 
+            data.market_day_high, 
+            data.market_day_low, 
+            timestamp()
+        ),
     ).unwrap();
 }
 
