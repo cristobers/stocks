@@ -63,7 +63,6 @@ pub fn get_names() -> Vec<String> {
     while let Some(row) = rows.next().unwrap() {
         names.push(row.get(0).unwrap());
     }
-
     names
 }
 
@@ -83,6 +82,58 @@ pub async fn insert_stock(data : Stock, db_name: &str) {
     ).unwrap();
 }
 
+pub fn create_table(sql_command : &str) {
+    let conn = connect("stocks.db");
+    conn.execute(
+        &sql_command,
+        (),
+    ).unwrap();
+    /*
+    if Path::new("stocks.db").exists() {
+        return;
+    } else {
+        let conn = connect("stocks.db");
+        conn.execute(
+            &sql_command,
+            (),
+        ).unwrap();
+    }
+    */
+}
+
+pub fn create_stocks() {
+    create_table(
+        "CREATE TABLE stocks (
+            stock_name       TEXT PRIMARY KEY,
+            stock_price      FLOAT,
+            stock_day_high   FLOAT,
+            stock_day_low    FLOAT,
+            last_get_request BIGINT
+        )"
+    );
+}
+
+pub fn create_users_to_stocks() {
+    create_table(
+        "CREATE TABLE users_to_stocks (
+            user_id BIGINT,
+            stock_name TEXT,
+            FOREIGN KEY (user_id)    REFERENCES users(user_id),
+            FOREIGN KEY (stock_name) REFERENCES stocks(stock_name)
+        )"
+    );
+}
+
+pub fn create_users() {
+    create_table(
+        "CREATE TABLE users (
+            user_id BIGINT PRIMARY KEY,
+            money   BIGINT
+        )"
+    );
+}
+
+/*
 pub fn create_stocks() {
     if Path::new("stocks.db").exists() {
         return;
@@ -100,3 +151,4 @@ pub fn create_stocks() {
         ).unwrap();
     }
 }
+*/

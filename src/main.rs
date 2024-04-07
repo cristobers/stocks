@@ -1,5 +1,6 @@
 use tokio;
 use std::net::{TcpListener, TcpStream};
+use std::path::Path;
 use crate::yahoo::Stock;
 use futures;
 use std::io::Write;
@@ -14,12 +15,7 @@ async fn initialise() {
         "GME",
         "NVDA",
         "AMD",
-        "INTC",
-        "BTC-USD",
-        "TSLA",
-        "NFLX",
-        "META",
-        "0R3E.L"
+        "ITEL",
     ].to_vec();
 
     for stock in stocks.into_iter() {
@@ -53,9 +49,10 @@ async fn sell_stock(stock: &str, amount : &str, mut conn: &TcpStream) {
 
 async fn query_stock(name: &str, mut conn: &TcpStream) {
     let mut initial_query = database::get(&name);
-    if database::should_we_pull_new_prices(&initial_query) {
+    let database_get_failed = initial_query.name == "None";
+    if database_get_failed || database::should_we_pull_new_prices(&initial_query) {
         println!("Getting new information for: {}", &initial_query.name);
-        let updated_stock = yahoo::get_req(&initial_query.name).await;
+        let updated_stock = yahoo::get_req(&name).await;
         database::insert_stock(updated_stock.clone(), "stocks.db").await;
         initial_query = updated_stock;
     }
@@ -69,20 +66,23 @@ async fn query_stock(name: &str, mut conn: &TcpStream) {
 async fn handle_conn (mut conn: &TcpStream) {
     let mut buf : [u8; 32] = [0; 32];
 
-    conn.read(&mut buf).unwrap();
+    conn.read(&mut buf)
+        .unwrap();
+
     let stringed = String::from_utf8_lossy(&buf);
-    let parse_input : Vec<&str> = stringed.split('\0').collect();
+    let parse_input : Vec<&str> = stringed.split('\0')
+        .collect();
 
     let full_cmd = parse_input[0];
-    let split_cmd : Vec<&str> = full_cmd.split_whitespace().collect();
-    let (mut cmd, mut stock, mut amount) = ("", "", "");
+    let split_cmd : Vec<&str> = full_cmd
+        .split_whitespace()
+        .collect();
 
-    if split_cmd.len() == 3 {
-        (cmd, stock, amount) = (split_cmd[0], split_cmd[1], split_cmd[2]);
-    } else if split_cmd.len() == 2 {
-        (cmd, stock) = (split_cmd[0], split_cmd[1]);
-    } else {
-        panic!("incorrect number of arguments");
+    let (mut cmd, mut stock, mut amount) = ("", "", "");
+    match split_cmd.len() {
+        3 => (cmd, stock, amount) = (split_cmd[0], split_cmd[1], split_cmd[2]),
+        2 => (cmd, stock) = (split_cmd[0], split_cmd[1]),
+        _ => panic!("incorrect number of arguments"),
     }
 
     match cmd {
@@ -109,6 +109,12 @@ async fn get_stocks(time_out: u64) {
 
 #[tokio::main]
 async fn main() {
+    if !Path::new("stocks.db").exists() {
+        initialise().await;
+        database::create_users();
+        database::create_users_to_stocks();
+    }
+
     let listener = TcpListener::bind("127.0.0.1:7690")
         .expect("PORT DIDNT OPEN WHY GOT WHY");
 

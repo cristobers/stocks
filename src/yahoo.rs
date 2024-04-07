@@ -16,6 +16,16 @@ pub struct Stock {
 pub async fn parse_json(stock_json: &str) -> Stock {
     let json : Value = serde_json::from_str(&stock_json).unwrap();
 
+    if json["chart"]["result"][0]["meta"]["instrumentType"] != "EQUITY" {
+        return Stock {
+            name:             String::from("None"),
+            market_price:     0.0,
+            market_day_high:  0.0,
+            market_day_low:   0.0,
+            last_get_request: 0,
+        }
+    }
+
     let name = json["chart"]["result"][0]["meta"]["symbol"]
         .to_string();
 
@@ -50,8 +60,11 @@ pub async fn get_req(stock_name: &str) -> Stock {
         )
     );
 
+    println!("{:?}", url);
+
     let resp = get(url)
         .await.unwrap();
+
 
     if resp.status() == StatusCode::NOT_FOUND {
         println!("Bad stock name found: {}", &stock_name);
