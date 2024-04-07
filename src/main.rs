@@ -10,7 +10,6 @@ mod yahoo;
 mod database;
 
 async fn initialise() {
-    database::create_stocks();
     let stocks: Vec<&str> = [
         "GME",
         "NVDA",
@@ -38,20 +37,19 @@ async fn initialise() {
 }
 
 async fn buy_stock(stock: &str, amount : &str, mut conn: &TcpStream) {
-    println!("Buying {} {}", &amount, &stock);
-    todo!("buying :3");
+    todo!("This is now managed by the discord bot instead of this.");
 }
 
 async fn sell_stock(stock: &str, amount : &str, mut conn: &TcpStream) {
-    println!("Selling {} {}", &amount, &stock);
-    todo!("selling :3");
+    todo!("This is now managed by the discord bot instead of this.");
 }
 
 async fn query_stock(name: &str, mut conn: &TcpStream) {
     let mut initial_query = database::get(&name);
     let database_get_failed = initial_query.name == "None";
     if database_get_failed || database::should_we_pull_new_prices(&initial_query) {
-        println!("Getting new information for: {}", &initial_query.name);
+        println!("Getting new information for: {}", &name);
+        // TODO: DONT RETURN NONE STOCK TO USER, THIS IS BAD!!!
         let updated_stock = yahoo::get_req(&name).await;
         database::insert_stock(updated_stock.clone(), "stocks.db").await;
         initial_query = updated_stock;
@@ -86,8 +84,6 @@ async fn handle_conn (mut conn: &TcpStream) {
     }
 
     match cmd {
-        "BUY"   => buy_stock(stock, amount, &conn).await,
-        "SELL"  => sell_stock(stock, amount, &conn).await,
         "QUERY" => query_stock(stock, &conn).await,
         _ => todo!("UNKNOWN COMMAND!!!"),
     };
@@ -110,9 +106,10 @@ async fn get_stocks(time_out: u64) {
 #[tokio::main]
 async fn main() {
     if !Path::new("stocks.db").exists() {
-        initialise().await;
+        database::create_stocks();
         database::create_users();
         database::create_users_to_stocks();
+        initialise().await;
     }
 
     let listener = TcpListener::bind("127.0.0.1:7690")

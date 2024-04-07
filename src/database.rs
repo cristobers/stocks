@@ -88,17 +88,6 @@ pub fn create_table(sql_command : &str) {
         &sql_command,
         (),
     ).unwrap();
-    /*
-    if Path::new("stocks.db").exists() {
-        return;
-    } else {
-        let conn = connect("stocks.db");
-        conn.execute(
-            &sql_command,
-            (),
-        ).unwrap();
-    }
-    */
 }
 
 pub fn create_stocks() {
@@ -128,27 +117,7 @@ pub fn create_users() {
     create_table(
         "CREATE TABLE users (
             user_id BIGINT PRIMARY KEY,
-            money   BIGINT
+            money   FLOAT 
         )"
     );
 }
-
-/*
-pub fn create_stocks() {
-    if Path::new("stocks.db").exists() {
-        return;
-    } else {
-        let conn = connect("stocks.db");
-        conn.execute(
-            "CREATE TABLE stocks (
-                stock_name       TEXT PRIMARY KEY,
-                stock_price      FLOAT,
-                stock_day_high   FLOAT,
-                stock_day_low    FLOAT,
-                last_get_request BIGINT
-            )",
-            (),
-        ).unwrap();
-    }
-}
-*/
