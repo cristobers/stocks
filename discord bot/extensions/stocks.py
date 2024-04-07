@@ -1,6 +1,4 @@
-import discord
-import sqlite3
-import socket
+import discord, sqlite3, socket
 from json import loads
 from discord.ext import commands
 
