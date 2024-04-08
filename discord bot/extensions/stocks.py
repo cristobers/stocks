@@ -23,7 +23,6 @@ def connect_to_stocks(stock: str):
         return s.recv(1024).decode()
 
 def is_user_in_db(user_id):
-    print(os.getcwd())
     cur, _ = cur_and_con("../stocks.db")
     res = cur.execute("""
         SELECT user_id from users
@@ -42,6 +41,7 @@ def get_user_info(user_id):
     return res
 
 def set_user_money(user_id, money):
+    print(user_id, money)
     if not is_user_in_db(user_id):
         return
     cur, con = cur_and_con("../stocks.db")
@@ -66,7 +66,6 @@ def give_user_stocks(user_id, stock_name, amount):
     cur, con = cur_and_con("../stocks.db")
 
     data = [(user_id, stock_name) for _ in range(amount)]
-    print(data)
 
     cur.executemany("""
         INSERT INTO users_to_stocks (user_id, stock_name) 
@@ -112,7 +111,7 @@ async def buy(ctx, stock, amount):
     data = loads(connect_to_stocks(stock))
     _, user_money = get_user_info(user_id)
 
-    name, mp, mh, ml = format(data)
+    name, mp, _, _ = format(data)
     user_money = '{0:.2f}'.format(user_money)
     mp, amount, user_money = float(mp), int(amount), float(user_money)
 
@@ -128,7 +127,7 @@ async def buy(ctx, stock, amount):
         await ctx.send("Can't buy <= 0 shares")
         return
 
-    for i in range(amount):
+    for _ in range(amount):
         if user_money < mp:
             break
         user_money -= mp 
@@ -141,13 +140,13 @@ async def buy(ctx, stock, amount):
         '{:.2f}'.format(mp * int(amount))
     )
 
-    user_money = '{0:.2f}'.format(user_money)
-    print(user_money, i)
+    user_money = float('{0:.2f}'.format(user_money))
+    print(f"USER MONEY: {user_money} BUYING PRICE {buying_price} SUM {float(user_money)}")
     set_user_money(user_id, user_money)
 
     # now give the user the stocks they bought
     give_user_stocks(user_id, name, amount)
-    await ctx.send(f"{ctx.author.display_name} is buying {amount} {name} for {buying_price}")
+    await ctx.send(f"{ctx.author.display_name} is buying {amount} {name} for {buying_price}, you now have {user_money}")
 
 @commands.hybrid_command(name="query", description="querys a stock")
 async def query(ctx, stock):
@@ -179,7 +178,7 @@ async def sell(ctx, stock, amount):
     data = loads(
         connect_to_stocks(stock)
     )
-    name, mp, mh, ml = format(data)
+    name, mp, _, _ = format(data)
     user_has = count_user_stocks(user_id, name)
 
     if name == "None":
@@ -202,7 +201,6 @@ async def sell(ctx, stock, amount):
         '{:.2f}'.format(mp * amount)
     )
 
-    print(user_id, name, amount)
     take_user_stocks(user_id, name, amount)
     set_user_money(user_id, curr_user_amount + final_amount)
     await ctx.send(f"{ctx.author.display_name} is selling {amount} {name} for {final_amount}")
