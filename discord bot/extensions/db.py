@@ -23,7 +23,6 @@ def get_user_info(user_id):
     return res
 
 def set_user_money(user_id, money):
-    print(user_id, money)
     if not is_user_in_db(user_id):
         return
     cur, con = cur_and_con("../stocks.db")

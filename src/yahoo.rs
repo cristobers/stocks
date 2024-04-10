@@ -65,7 +65,6 @@ pub async fn get_req(stock_name: &str) -> Stock {
     let resp = get(url)
         .await.unwrap();
 
-
     if resp.status() == StatusCode::NOT_FOUND {
         println!("Bad stock name found: {}", &stock_name);
         return Stock {

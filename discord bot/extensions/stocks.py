@@ -1,9 +1,12 @@
 import discord, socket, os
-from json import loads
+from json import load, loads
 from discord.ext import commands
 import extensions.db as db
 
-host, port = '127.0.0.1', 7690
+host, port = None, None
+with open("extensions/settings.json") as f:
+    settings = load(f)
+    host, port = settings["HOST"], settings["PORT"]
 
 def format(data):
     name = data['name']
@@ -49,6 +52,7 @@ async def buy(ctx, stock, amount):
         return
 
     if user_money < (mp * amount) or user_money <= 0:
+        # TODO: make this an embed
         await ctx.send(f"You cannot afford this. You only have `{user_money}`, this would cost you `{'{:.2f}'.format(mp*amount)}`")
         return
 
@@ -70,7 +74,6 @@ async def buy(ctx, stock, amount):
     )
 
     user_money = float('{0:.2f}'.format(user_money))
-    print(f"USER MONEY: {user_money} BUYING PRICE {buying_price} SUM {float(user_money)}")
     db.set_user_money(user_id, user_money)
 
     # now give the user the stocks they bought
