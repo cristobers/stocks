@@ -1,8 +1,6 @@
 use tokio;
 use std::net::{TcpListener, TcpStream};
 use std::path::Path;
-use crate::yahoo::Stock;
-use futures;
 use std::io::Write;
 use std::io::Read;
 
@@ -34,14 +32,6 @@ async fn initialise() {
             println!("{} Wasn't a recognised stock name", &stock);
         }
     }
-}
-
-async fn buy_stock(stock: &str, amount : &str, mut conn: &TcpStream) {
-    todo!("This is now managed by the discord bot instead of this.");
-}
-
-async fn sell_stock(stock: &str, amount : &str, mut conn: &TcpStream) {
-    todo!("This is now managed by the discord bot instead of this.");
 }
 
 async fn query_stock(name: &str, mut conn: &TcpStream) {
@@ -76,9 +66,8 @@ async fn handle_conn (mut conn: &TcpStream) {
         .split_whitespace()
         .collect();
 
-    let (mut cmd, mut stock, mut amount) = ("", "", "");
+    let (cmd, stock);
     match split_cmd.len() {
-        3 => (cmd, stock, amount) = (split_cmd[0], split_cmd[1], split_cmd[2]),
         2 => (cmd, stock) = (split_cmd[0], split_cmd[1]),
         _ => panic!("incorrect number of arguments"),
     }
@@ -87,20 +76,6 @@ async fn handle_conn (mut conn: &TcpStream) {
         "QUERY" => query_stock(stock, &conn).await,
         _ => todo!("UNKNOWN COMMAND!!!"),
     };
-}
-
-async fn get_stocks(time_out: u64) {
-    loop {
-        let names : Vec<String> = database::get_names();
-        println!("Database stock names: {:?}", &names);
-        for name in names {
-            let stock_struct : Stock = yahoo::get_req(&name).await;
-            println!("{:?}", stock_struct);
-            database::insert_stock(stock_struct, "stocks.db").await;
-        }
-        println!("Hello!, sleeping for {} seconds...", time_out);
-        tokio::time::sleep(tokio::time::Duration::from_secs(time_out)).await;
-    }
 }
 
 #[tokio::main]

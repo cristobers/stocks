@@ -1,6 +1,6 @@
 use reqwest::{get, StatusCode};
-use serde_json::{Value};
-use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use serde::Serialize;
 
 use crate::database::timestamp;
 
@@ -43,9 +43,9 @@ pub async fn parse_json(stock_json: &str) -> Stock {
 
     Stock {
         name: serde_json::from_str(&name).unwrap(),
-        market_price:         market_price,
-        market_day_high:      market_day_high,
-        market_day_low:       market_day_low,
+        market_price,
+        market_day_high,
+        market_day_low,
         last_get_request:     timestamp(),
     }
 }
