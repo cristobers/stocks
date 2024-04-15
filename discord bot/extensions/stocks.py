@@ -1,4 +1,5 @@
 import discord, socket, os
+from collections import Counter
 from json import load, loads
 from discord.ext import commands
 import extensions.db as db
@@ -97,6 +98,19 @@ async def query(ctx, stock):
     name, mp, _, _ = format(data)
     await ctx.send(embed=embed("Querying", name, mp, None))
 
+def info_embed(lst):
+    embed = discord.Embed()
+    for entry in lst:
+        embed.add_field(name=f"{entry[0][1]} {entry[1]}", value=None, inline=False)
+    return embed
+
+@commands.hybrid_command(name="info", description="Gets your info")
+async def info(ctx):
+    res = db.get_stocks_for_user(ctx.author.id)
+    final = Counter(res).most_common()
+    print(final)
+    await ctx.send(embed=info_embed(final))
+
 @commands.hybrid_command(name="sell", description="sells a stock")
 async def sell(ctx, stock, amount):
     user_id = ctx.author.id
@@ -142,3 +156,4 @@ async def setup(bot):
     bot.add_command(buy)
     bot.add_command(sell)
     bot.add_command(query)
+    bot.add_command(info)

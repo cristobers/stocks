@@ -66,6 +66,17 @@ def count_user_stocks(user_id, stock_name) -> int:
         """, (stock_name, user_id))
     return len(res.fetchall())
 
+def get_stocks_for_user(user_id):
+    if not is_user_in_db(user_id):
+        return
+    cur, _ = cur_and_con("../stocks.db")
+    res = cur.execute(
+        """
+        SELECT * FROM users_to_stocks
+        WHERE user_id = ?
+        """, (user_id, ))
+    return res.fetchall()
+
 def take_user_stocks(user_id, stock_name, amount) -> float:
     if not is_user_in_db(user_id):
         return
