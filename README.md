@@ -7,19 +7,19 @@ the other being a discord bot that handles the user interaction.
 
 The discord bot also handles adding and removing stocks, and also adding and removing money from users.
 ```
-┌───────────────────┐         ┌──────────────┐
-│                   ├─────────►              │
-│ yahoo finance API │         │ rust backend │
-│                   ◄─────────┤              │
-└───────────────────┘         └──┬────────▲──┘
-                                 │        │   
-                                ┌▼────────┴┐  
-                                │ discord  │  
-                                │ bot      │  
-                                └┬────────▲┘  
-                                 │        │   
-                              ┌──▼────────┴──┐
-                              │discord client│
+┌───────────────────┐         ┌──────────────┐                                            
+│                   ├─────────►              │ *Rust backend handles grabbing stock prices
+│ yahoo finance API │         │ rust backend │                                            
+│                   ◄─────────┤              │                                            
+└───────────────────┘         └──┬────────▲──┘                                            
+                                 │        │                                               
+                                ┌▼────────┴┐                                              
+                                │ discord  │   *Discord bot handles user interaction      
+                                │ bot      │                                              
+                                └┬────────▲┘                                              
+                                 │        │                                               
+                              ┌──▼────────┴──┐                                            
+                              │discord client│                                            
                               └──────────────┘
 ```
 ## How does this work
