@@ -6,7 +6,7 @@ The application is split into two parts, one being the Rust backend that grabs p
 the other being a discord bot that handles the user interaction.
 
 The discord bot also handles adding and removing stocks, and also adding and removing money from users.
-
+```
 ┌───────────────────┐         ┌──────────────┐
 │                   ├─────────►              │
 │ yahoo finance API │         │ rust backend │
@@ -21,6 +21,7 @@ The discord bot also handles adding and removing stocks, and also adding and rem
                               ┌──▼────────┴──┐
                               │discord client│
                               └──────────────┘
+```
 ## How does this work
 
 Stocks are given a timestamp, if its been more than an hour since the last update,
