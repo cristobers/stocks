@@ -7,6 +7,20 @@ the other being a discord bot that handles the user interaction.
 
 The discord bot also handles adding and removing stocks, and also adding and removing money from users.
 
+┌───────────────────┐         ┌──────────────┐
+│                   ├─────────►              │
+│ yahoo finance API │         │ rust backend │
+│                   ◄─────────┤              │
+└───────────────────┘         └──┬────────▲──┘
+                                 │        │   
+                                ┌▼────────┴┐  
+                                │ discord  │  
+                                │ bot      │  
+                                └┬────────▲┘  
+                                 │        │   
+                              ┌──▼────────┴──┐
+                              │discord client│
+                              └──────────────┘
 ## How does this work
 
 Stocks are given a timestamp, if its been more than an hour since the last update,
