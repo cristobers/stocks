@@ -88,7 +88,7 @@ async fn main() {
     }
 
     let listener = TcpListener::bind("127.0.0.1:7690")
-        .expect("PORT DIDNT OPEN WHY GOT WHY");
+        .expect("PORT DIDNT OPEN WHY GOD WHY");
 
     for stream in listener.incoming() {
         let mut curr_stream = stream.unwrap();
