@@ -15,9 +15,24 @@ that have been queried by users. These are kept until an hour has passed, then t
 value can be updated.
 
 Stocks are given a timestamp, if its been more than an hour since the last update,
-then the stock is updated from Yahoo Finance.
+then the stock is updated from Yahoo Finance, this is done so that we mitigate the 
+risk of being rate limited by Yahoo Finance.
 
-This is meant to be a slow burning game, as stocks take a while to update and change.
+### Stocks table
+
+| name | price | day_high | day_low | last_get_request |
+| ---- | ----- | --------- | ------- | --------------- |
+
+### Users table
+
+| user_id | money |
+| ------- | ----- |
+
+### Users_to_stocks table
+
+| user_id | stock_name |
+| ------- | ---------- |
+
 
 ## Discord bot commands
 ```

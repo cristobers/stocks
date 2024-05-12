@@ -98,17 +98,25 @@ async def query(ctx, stock):
     name, mp, _, _ = format(data)
     await ctx.send(embed=embed("Querying", name, mp, None))
 
+def get_price(stock_name: str):
+    data = loads(connect_to_stocks(stock_name))
+    _, mp, _, _ = format(data)
+    return mp
+
 def info_embed(lst):
     embed = discord.Embed()
     for entry in lst:
-        embed.add_field(name=f"{entry[0][1]} {entry[1]}", value=None, inline=False)
+        print("HERE")
+        name = entry[0][1]
+        embed.add_field(
+                name=f"{entry[0][1]} {entry[1]}", value=get_price(name), inline=False
+        )
     return embed
 
 @commands.hybrid_command(name="info", description="Gets your info")
 async def info(ctx):
     res = db.get_stocks_for_user(ctx.author.id)
     final = Counter(res).most_common()
-    print(final)
     await ctx.send(embed=info_embed(final))
 
 @commands.hybrid_command(name="sell", description="sells a stock")
