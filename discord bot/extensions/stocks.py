@@ -108,7 +108,7 @@ def info_embed(lst):
     for entry in lst:
         name = entry[0][1]
         embed.add_field(
-                name=f"{entry[0][1]} {entry[1]}", value=get_price(name), inline=False
+            name=f"{entry[0][1]} {entry[1]}", value=get_price(name), inline=False
         )
     return embed
 

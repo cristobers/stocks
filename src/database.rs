@@ -1,7 +1,6 @@
-use rusqlite::{Connection};
+use rusqlite::Connection;
 use crate::yahoo::Stock;
-use std::path::Path;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn timestamp() -> u64 {
     SystemTime::now()
@@ -33,6 +32,8 @@ pub fn get(stock_name : &str) -> Stock {
     let mut rows = stmt.query(rusqlite::params![stock_name]).unwrap();
     let test = rows.next().unwrap();
     if test.is_none() {
+        // i dont like this, but its only used here so it'll stay for now.
+        // if i use this in more places, ill change this.
         Stock {
             name:             String::from("None"),
             market_price:     0.0,
@@ -49,21 +50,6 @@ pub fn get(stock_name : &str) -> Stock {
             last_get_request: test.unwrap().get(4).unwrap(),
         }
     }
-}
-
-pub fn get_names() -> Vec<String> {
-    let conn = connect("stocks.db");
-
-    let mut stmt = conn.prepare(
-        "SELECT stock_name FROM stocks",
-    ).unwrap();
-
-    let mut rows = stmt.query([]).unwrap();
-    let mut names = Vec::new();
-    while let Some(row) = rows.next().unwrap() {
-        names.push(row.get(0).unwrap());
-    }
-    names
 }
 
 pub async fn insert_stock(data : Stock, db_name: &str) {
