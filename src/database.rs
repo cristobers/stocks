@@ -11,10 +11,7 @@ pub fn timestamp() -> u64 {
 
 pub fn should_we_pull_new_prices(stock : &Stock) -> bool {
     let curr_time = timestamp();
-    if (curr_time - stock.last_get_request) >= 3600 {
-        return true;
-    }
-    false
+    (curr_time - stock.last_get_request) >= 3600
 }
 
 fn connect(name: &str) -> Connection {
