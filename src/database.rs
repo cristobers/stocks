@@ -2,6 +2,8 @@ use rusqlite::Connection;
 use crate::yahoo::{Stock, bad_stock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+const ONE_HOUR: u64 = 3600;
+
 pub fn timestamp() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -11,7 +13,7 @@ pub fn timestamp() -> u64 {
 
 pub fn should_we_pull_new_prices(stock : &Stock) -> bool {
     let curr_time = timestamp();
-    (curr_time - stock.last_get_request) >= 3600
+    (curr_time - stock.last_get_request) >= ONE_HOUR
 }
 
 fn connect(name: &str) -> Connection {
