@@ -1,5 +1,5 @@
 use rusqlite::Connection;
-use crate::yahoo::Stock;
+use crate::yahoo::{Stock, bad_stock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn timestamp() -> u64 {
@@ -32,15 +32,7 @@ pub fn get(stock_name : &str) -> Stock {
     let mut rows = stmt.query(rusqlite::params![stock_name]).unwrap();
     let test = rows.next().unwrap();
     if test.is_none() {
-        // i dont like this, but its only used here so it'll stay for now.
-        // if i use this in more places, ill change this.
-        Stock {
-            name:             String::from("None"),
-            market_price:     0.0,
-            market_day_high:  0.0,
-            market_day_low:   0.0,
-            last_get_request: 0,
-        }
+        return bad_stock();
     } else {
         Stock {
             name:             test.unwrap().get(0).unwrap(),
