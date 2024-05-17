@@ -6,7 +6,7 @@ intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="/", intents=intents)
 
 token = None
-owner_id = 66183829148151808
+owner_id = 66183829148151808 
 
 with open("token.json") as f:
     token = load(f)["TOKEN"]
