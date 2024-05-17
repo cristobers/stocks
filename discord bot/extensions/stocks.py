@@ -1,8 +1,9 @@
-import discord, socket, os
+import discord, socket, os, math
 from collections import Counter
 from json import load, loads
 from discord.ext import commands
 import extensions.db as db
+import extensions.embeds as embeds
 
 host, port = None, None
 with open("extensions/settings.json") as f:
@@ -28,14 +29,6 @@ def valid_input(n):
         return False 
     return True
 
-def embed(type, name, mp, amount):
-    # TODO: get seperate embeds for each action
-    embed = discord.Embed(title=f"{type} {name}")
-    embed.add_field(name="Price", value=mp, inline=False)
-    if amount != None:
-        embed.add_field(name="You currently have", value=amount, inline=False)
-    return embed
-
 @commands.hybrid_command(name="buy", description="Buys a stock")
 async def buy(ctx, stock, amount):
     user_id = ctx.author.id
@@ -54,7 +47,7 @@ async def buy(ctx, stock, amount):
 
     if user_money < (mp * amount) or user_money <= 0:
         # TODO: make this an embed
-        await ctx.send(f"You cannot afford this. You only have `{user_money}`, this would cost you `{'{:.2f}'.format(mp*amount)}`")
+        await ctx.send(f"You cannot afford this. You only have `{user_money}`, this would cost you `{'{:.2f}'.format(mp*amount)}`. The max you can buy is {math.floor(user_money/mp)}.")
         return
 
     if not valid_input(amount):
@@ -80,7 +73,7 @@ async def buy(ctx, stock, amount):
     # now give the user the stocks they bought
     db.give_user_stocks(user_id, name, amount)
     stock_amount = db.count_user_stocks(user_id, name)
-    await ctx.send(embed=embed("Buying", name, mp, stock_amount))
+    await ctx.send(embed=embeds.embed("Buying", name, mp, stock_amount))
 
 @commands.hybrid_command(name="query", description="querys a stock")
 async def query(ctx, stock):
@@ -96,39 +89,31 @@ async def query(ctx, stock):
         return
 
     name, mp, _, _ = format(data)
-    await ctx.send(embed=embed("Querying", name, mp, None))
+    await ctx.send(embed=embeds.embed("Querying", name, mp, None))
 
 def get_price(stock_name: str):
     data = loads(connect_to_stocks(stock_name))
     _, mp, _, _ = format(data)
     return mp
 
-def info_embed(lst):
-    embed = discord.Embed()
-    for entry in lst:
-        name = entry[0][1]
-        embed.add_field(
-            name=f"{entry[0][1]} {entry[1]}", value=get_price(name), inline=False
-        )
-    return embed
-
 @commands.hybrid_command(name="info", description="Gets your info")
 async def info(ctx):
     res = db.get_stocks_for_user(ctx.author.id)
     final = Counter(res).most_common()
-    await ctx.send(embed=info_embed(final))
+    _, money = db.get_user_info(ctx.author.id)
+    await ctx.send(embed=embeds.info_embed(final, money))
 
 @commands.hybrid_command(name="sell", description="sells a stock")
 async def sell(ctx, stock, amount):
     user_id = ctx.author.id
     db.setup_user(user_id, 10_000)
-    """
+    '''
     if (user has stock in stock_to_user db):
         delete that stock entry
         add money to user db entry
     else:
         say("you cant get ye flask!")
-    """
+    '''
     data = loads(
         connect_to_stocks(stock)
     )
@@ -157,7 +142,7 @@ async def sell(ctx, stock, amount):
     db.take_user_stocks(user_id, name, amount)
     db.set_user_money(user_id, curr_user_amount + final_amount)
     user_has = db.count_user_stocks(user_id, name)
-    await ctx.send(embed=embed("Selling", name, mp, user_has))
+    await ctx.send(embed=embeds.embed("Selling", name, mp, user_has))
 
 async def setup(bot):
     bot.add_command(buy)
