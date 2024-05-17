@@ -1,6 +1,6 @@
 /target
 discord\ bot/token.json
-discord\ bot/extensions\__pycache__
+discord\ bot/extensions\__pycache__/
 stocks.db
 notes.txt
 *.swp
