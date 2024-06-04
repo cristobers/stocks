@@ -1,6 +1,7 @@
 use reqwest::{get, StatusCode};
 use serde_json::Value;
 use serde::Serialize;
+use std::{fs, str::FromStr};
 
 use crate::database::timestamp;
 
@@ -54,6 +55,19 @@ pub async fn parse_json(stock_json: &str) -> Stock {
     }
 }
 
+fn create_headers() -> reqwest::header::HeaderMap {
+
+    let config = serde_json::json!(fs::read_to_string("config.json").unwrap());
+    let user_agent = config["user-agent"].to_string();
+    let mut headers = reqwest::header::HeaderMap::new();
+    headers.insert(
+        reqwest::header::USER_AGENT, reqwest::header::HeaderValue::from_str(
+            &user_agent
+        ).unwrap()
+    );
+    headers
+}
+
 pub async fn get_req(stock_name: &str) -> Stock {
     // get stock should only make a req if the entry doesnt exist in the db.
     // dont you DARE go over that ruler
@@ -66,7 +80,11 @@ pub async fn get_req(stock_name: &str) -> Stock {
 
     println!("{:?}", url);
 
-    let resp = get(url)
+    let client = reqwest::Client::new();
+    let resp = client
+        .get(url)
+        .headers(create_headers())
+        .send()
         .await.unwrap();
 
     if resp.status() == StatusCode::NOT_FOUND {
@@ -75,5 +93,6 @@ pub async fn get_req(stock_name: &str) -> Stock {
     }
 
     let text = resp.text().await.unwrap();
+    // dbg!(&text);
     parse_json(&text).await
 }

@@ -98,6 +98,7 @@ def get_price(stock_name: str):
 
 @commands.hybrid_command(name="info", description="Gets your info")
 async def info(ctx):
+    print("running info")
     db.setup_user(ctx.author.id, 10_000)
     res = db.get_stocks_for_user(ctx.author.id)
     final = Counter(res).most_common()
